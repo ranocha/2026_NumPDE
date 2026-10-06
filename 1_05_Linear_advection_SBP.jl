@@ -48,7 +48,7 @@ end
 
 # ╔═╡ 49013e3e-4a23-11ed-3281-85e869263467
 md"""
-# Linear advection equation with nonperiodic boundary conditions
+# 1.5 Summation-by-parts operators on bounded domains: the linear advection equation with nonperiodic boundary conditions
 
 Consider the linear advection equation
 

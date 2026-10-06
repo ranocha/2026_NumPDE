@@ -16,7 +16,7 @@ using CondaPkg
 
 # ╔═╡ 49013e3e-4a23-11ed-3281-85e869263467
 md"""
-# Stability regions of Runge-Kutta methods
+# 1.4 Runge–Kutta methods and fully discrete energy estimates: stability regions of Runge-Kutta methods
 
 """
 

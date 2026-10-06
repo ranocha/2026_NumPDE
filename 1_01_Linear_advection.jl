@@ -45,7 +45,7 @@ end
 
 # ╔═╡ 49013e3e-4a23-11ed-3281-85e869263467
 md"""
-# Linear advection equation
+# 1.1 Basic ideas of finite difference methods in 1D: the linear advection equation with periodic boundary conditions
 
 Consider the linear advection equation
 

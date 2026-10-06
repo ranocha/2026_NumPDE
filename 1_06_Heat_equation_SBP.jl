@@ -48,7 +48,7 @@ end
 
 # ╔═╡ 49013e3e-4a23-11ed-3281-85e869263467
 md"""
-# Heat equation with homogeneous Neumann boundary conditions
+# 1.6 Second-derivative operators: the heat equation with homogeneous Neumann boundary conditions
 
 Consider the heat equation
 

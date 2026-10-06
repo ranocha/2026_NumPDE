@@ -48,7 +48,7 @@ end
 
 # ╔═╡ 49013e3e-4a23-11ed-3281-85e869263467
 md"""
-# Wave equation with homogeneous Neumann boundary conditions
+# 1.7 Second-derivative operators: the wave equation with homogeneous Neumann boundary conditions
 
 Consider the wave equation
 
