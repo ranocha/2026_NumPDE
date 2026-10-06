@@ -16,6 +16,9 @@ macro bind(def, element)
     #! format: on
 end
 
+# ╔═╡ 9b552053-cd6e-463c-946b-da4c7a668a5a
+using Printf
+
 # ╔═╡ de2b4bee-ca03-47e6-9b5c-be3bf7f87bb4
 begin
 	using PlutoUI
@@ -32,7 +35,7 @@ using SummationByPartsOperators
 # ╠═╡ show_logs = false
 using LaTeXStrings
 
-# ╔═╡ 9aeb4d30-2fda-42dd-b9c0-cba7c1dad70b
+# ╔═╡ 83beb91a-ac52-4924-b5d4-3c4ce6c2e2be
 begin
 	using CairoMakie
 	set_theme!(theme_latexfonts();
@@ -45,19 +48,33 @@ end
 
 # ╔═╡ 49013e3e-4a23-11ed-3281-85e869263467
 md"""
-# Linear advection equation
+# Wave equation with homogeneous Neumann boundary conditions
 
-Consider the linear advection equation
+Consider the wave equation
+
+$$\begin{equation*}
+  \begin{aligned}
+    \partial_t^2 u(t, x) &= \partial_x^2 u(t, x) && \text{in } (0,T) \times (x_\mathrm{min}, x_\mathrm{max}), \\
+		\partial_x u(t, x) &= 0 && \text{on } (0, T) \times \{x_\mathrm{min}, x_\mathrm{max}\}, \\
+    u(t, x) &= u^0(x) &&\text{on } \{0\} \times [x_\mathrm{min}, x_\mathrm{max}], \\
+    \partial_t u(t, x) &= v^0(x) &&\text{on } \{0\} \times [x_\mathrm{min}, x_\mathrm{max}].
+  \end{aligned}
+\end{equation*}$$
+
+Here, we choose the initial conditions
 
 $$\begin{equation*}
 \begin{aligned}
-  \partial_t u(t, x) + \partial_x u(t, x) &= 0 && \text{in } (0,T) \times (-1, 1), \\
-  u(0, \cdot) &= u^0(x) = \sin(\pi x) &&\text{for } x \in [-1, 1], \\
+  u^0(x) &= \exp(-20 x^2), \\
+  v^0(x) &= 0, \\
 \end{aligned}
 \end{equation*}$$
 
-with periodic boundary conditions (BCs). We use second-order accurate central
-finite differences in space and a third-order accurate Runge-Kutta method in time.
+with parameters $x_\mathrm{min} = -1$, $x_\mathrm{max} = 1$.
+
+We use the classical second-derivative SBP operator
+(central differences in the interior, one-sided differences at the boundaries)
+in space and a third-order accurate Runge-Kutta method in time.
 The parameters are
 - ``N``: number of grid points distributed uniformly in the domain
 - ``\Delta x``: grid spacing
@@ -65,45 +82,17 @@ The parameters are
 
 """
 
-# ╔═╡ 415276e3-6bf4-4337-986d-820ec282ea0b
+# ╔═╡ 27b7b87b-5d76-4893-9d32-9b1fd7d200b1
 md"""
-``N`` = $(@bind N Slider(10:10:200, default=50, show_value=true))
+You should play around with the parameter settings above. In particular, you
+should have a look at the following questions:
 
-
+- How does the solution evolve in time? You can choose the final time ``T``
+  to investigate this behavior.
+- How does the error behave under grid refinement, i.e., increasing ``N``?
+- How do you need to choose the time step size ``\Delta t`` depending on the
+  spatial resolution ``N \propto 1 / \Delta x``?
 """
-
-# ╔═╡ 1be9e783-7198-4413-8cdb-20cec994c4c4
-md"(``\Delta x`` = $(1 / N)) "
-
-# ╔═╡ 1e12042b-f911-4438-aa52-0556b739ccb2
-md"""
-``\Delta t`` = $(@bind Δt Slider([1.0e-4, 1.0e-3, 1.0e-2, 0.02, 0.03, 0.04, 0.05, 0.06, 1.0e-1], default=1.0e-2, show_value=true))
-"""
-
-# ╔═╡ d4be206d-927d-408f-8c4d-2046e0b568fb
-md"""
-``T`` = $(@bind T Slider(0.0:0.1:31.0, default=2.0, show_value=true))
-"""
-
-# ╔═╡ 0a071947-9e23-4218-9436-915f08e1a83c
-begin
-	D = periodic_derivative_operator(derivative_order = 1, accuracy_order = 2,
-													 xmin = -1.0, xmax = 1.0, N = N)
-	x = grid(D)
-	u0 = @. sin(π * x)
-	ode = ODEProblem((du, u, D, t) -> mul!(du, D, u, -1), u0, (0.0, T), D)
-	sol = solve(ode, SSPRK33(); adaptive = false, dt = Δt, save_everystep = false)
-
-	fig = Figure()
-	ax = Axis(fig[1, 1]; xlabel = L"x", ylabel = L"u")
-	x_plot = range(SummationByPartsOperators.xmin(D),
-         		   SummationByPartsOperators.xmax(D), length = 200)
-	lines!(ax, x_plot, sinpi.(x_plot), label = L"u^0")
-	scatter!(ax, x, sol.u[end], label = L"u^\mathrm{num}")
-	lines!(ax, x_plot, @.(sinpi(x_plot - T)), label = L"u^\mathrm{ana}")
-	axislegend(ax; position = :rt)
-	fig
-end
 
 # ╔═╡ 823036b2-f41d-4642-995f-4e96cc6f9f15
 md"""
@@ -124,6 +113,88 @@ space
 # ╔═╡ 668f1ccd-7e7a-4d6e-b3f5-23a8389244e2
 space
 
+# ╔═╡ de68c071-b710-498b-abb4-2b729250e09a
+function rhs!(ddu, du, u, parameters, t)
+	D2, = parameters
+	mul!(ddu, D2, u)
+	ddu[begin] += derivative_left(D2, u, Val{1}()) / left_boundary_weight(D2)
+	ddu[end] -= derivative_right(D2, u, Val{1}()) / right_boundary_weight(D2)
+	return nothing
+end
+
+# ╔═╡ 982e9af9-ba93-4855-bb0a-a3bd4249ab2c
+# We can interpret the solution of the problem with homogeneous Neumann BCs
+# as the superposition of multiple wave packets on the whole real line.
+# We use that the initial condition is essentially zero at the boundaries
+# (in 64 bit floating point arithmetic).
+function usol(t, x)
+	u = zero(t + x)
+	# This is only accurate up to time 10
+	for i in 0:5
+		left  = 0.5 * exp(-20 * (x - t + 2 * i)^2)
+		right = 0.5 * exp(-20 * (x + t - 2 * i)^2)
+		u = u + left + right
+	end
+	return u
+end
+
+# ╔═╡ dd98c2bd-b0b9-4c73-8ff7-e66d31c05204
+const Tmax = 6.0
+
+# ╔═╡ 415276e3-6bf4-4337-986d-820ec282ea0b
+md"""
+``N`` = $(@bind N Slider([20, 40, 80, 160], default=40, show_value=true))
+
+(``\Delta x`` = $(1 / N))
+
+``\Delta t`` = $(@bind Δt Slider([1.0e-3, 5.0e-3, 1.0e-2, 2.0e-2, 4.0e-2, 8.0e-2, 0.16], default=1.0e-2, show_value=true))
+
+``T`` = $(@bind T Slider(0.0:0.02:Tmax, default=0.2, show_value=true))
+"""
+
+# ╔═╡ 80620afb-7a5f-4511-9afd-d80c9d045885
+begin
+	D2 = derivative_operator(MattssonNordström2004(),
+						     derivative_order = 2, accuracy_order = 2,
+						     xmin = -1.0, xmax = 1.0, N = N)
+	x = grid(D2)
+	u0 = @. exp(-20 * x^2)
+	v0 = zero(u0)
+	nothing
+end
+
+# ╔═╡ 13e33aa8-f7b4-4a28-b6ff-9c4351af361c
+begin
+	ode = SecondOrderODEProblem(rhs!, v0, u0, (0.0, Tmax), (D2,))
+	sol = solve(ode, SSPRK33(); adaptive = false, dt = Δt)
+	nothing
+end
+
+# ╔═╡ 46f8b441-af8f-40e3-9856-acfd69d70c20
+let
+	x = grid(D2)
+	err = integrate(abs2, usol.(T, x) - sol(T).x[2], D2) |> sqrt
+	md"""
+	Error at the time ``T``: $(@sprintf("%.2e", err))
+	"""
+end
+
+# ╔═╡ 0a071947-9e23-4218-9436-915f08e1a83c
+begin
+	fig = Figure()
+	ax = Axis(fig[1, 1]; xlabel = L"x", ylabel = L"u")
+	x_plot = range(-1.0, 1.0, length = 200)
+	lines!(ax, x_plot, usol.(first(ode.tspan), x_plot), label = L"u^0")
+	scatter!(ax, x, sol(T).x[2], label = L"u^\mathrm{num}")
+	lines!(ax, x_plot, usol.(T, x_plot), label = L"u^\mathrm{ana}")
+	min, max = extrema(sol.u[end].x[2])
+	if min > -0.1 && max < 1.1
+		ylims!(ax, -0.1, 1.1)
+	end
+	axislegend(ax; position = :rt)
+	fig
+end
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -131,6 +202,7 @@ CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 OrdinaryDiffEqSSPRK = "669c94d9-1f4b-4b64-b377-1aa079aa2388"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 SummationByPartsOperators = "9f78cca6-572e-554e-b819-917d2f1cf240"
 
 [compat]
@@ -147,7 +219,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.12"
 manifest_format = "2.0"
-project_hash = "8e02b90fca52d0b3dfbd3541e83f64ce639402cf"
+project_hash = "f3c52d5b6568d76672f4ef1c7a54c3fec1ccd08c"
 
 [[deps.ADTypes]]
 deps = ["PrecompileTools"]
@@ -2580,19 +2652,24 @@ version = "4.1.0+0"
 # ╔═╡ Cell order:
 # ╟─49013e3e-4a23-11ed-3281-85e869263467
 # ╟─415276e3-6bf4-4337-986d-820ec282ea0b
-# ╟─1be9e783-7198-4413-8cdb-20cec994c4c4
-# ╟─1e12042b-f911-4438-aa52-0556b739ccb2
-# ╟─d4be206d-927d-408f-8c4d-2046e0b568fb
+# ╟─46f8b441-af8f-40e3-9856-acfd69d70c20
 # ╟─0a071947-9e23-4218-9436-915f08e1a83c
+# ╟─27b7b87b-5d76-4893-9d32-9b1fd7d200b1
 # ╟─2b28849d-c3d4-4f69-80c7-60ce5cb6f487
 # ╟─417e5583-7d99-4eac-953f-b84cce3a72b0
 # ╟─668f1ccd-7e7a-4d6e-b3f5-23a8389244e2
 # ╟─823036b2-f41d-4642-995f-4e96cc6f9f15
 # ╠═e3c5952c-2125-416e-a718-ccf5db02933a
+# ╠═9b552053-cd6e-463c-946b-da4c7a668a5a
 # ╠═de2b4bee-ca03-47e6-9b5c-be3bf7f87bb4
 # ╠═bcec0bba-2f5d-49d7-a0d3-e4ba50afabc0
 # ╠═176d6bba-933b-4904-84be-92aef76250ac
 # ╠═7a3580a3-3cb2-4282-a9f3-b32702d8c8f7
-# ╠═9aeb4d30-2fda-42dd-b9c0-cba7c1dad70b
+# ╠═83beb91a-ac52-4924-b5d4-3c4ce6c2e2be
+# ╠═de68c071-b710-498b-abb4-2b729250e09a
+# ╠═80620afb-7a5f-4511-9afd-d80c9d045885
+# ╠═982e9af9-ba93-4855-bb0a-a3bd4249ab2c
+# ╠═dd98c2bd-b0b9-4c73-8ff7-e66d31c05204
+# ╠═13e33aa8-f7b4-4a28-b6ff-9c4351af361c
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
