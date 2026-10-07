@@ -21,8 +21,8 @@ using Printf
 
 # ╔═╡ de2b4bee-ca03-47e6-9b5c-be3bf7f87bb4
 begin
-	using PlutoUI
-	using PlutoUI: Slider
+    using PlutoUI
+    using PlutoUI: Slider
 end
 
 # ╔═╡ bcec0bba-2f5d-49d7-a0d3-e4ba50afabc0
@@ -37,13 +37,13 @@ using LaTeXStrings
 
 # ╔═╡ 83beb91a-ac52-4924-b5d4-3c4ce6c2e2be
 begin
-	using CairoMakie
-	set_theme!(theme_latexfonts();
-			   fontsize = 16,
-			   linewidth = 3,
-			   markersize = 16,
-			   Lines = (cycle = Cycle([:color, :linestyle], covary = true),),
-			   Scatter = (cycle = Cycle([:color, :marker], covary = true),))
+    using CairoMakie
+    set_theme!(theme_latexfonts();
+               fontsize = 16,
+               linewidth = 3,
+               markersize = 16,
+               Lines = (cycle = Cycle([:color, :linestyle], covary = true),),
+               Scatter = (cycle = Cycle([:color, :marker], covary = true),))
 end
 
 # ╔═╡ 49013e3e-4a23-11ed-3281-85e869263467
@@ -55,7 +55,7 @@ Consider the wave equation
 $$\begin{equation*}
   \begin{aligned}
     \partial_t^2 u(t, x) &= \partial_x^2 u(t, x) && \text{in } (0,T) \times (x_\mathrm{min}, x_\mathrm{max}), \\
-		\partial_x u(t, x) &= 0 && \text{on } (0, T) \times \{x_\mathrm{min}, x_\mathrm{max}\}, \\
+    \partial_x u(t, x) &= 0 && \text{on } (0, T) \times \{x_\mathrm{min}, x_\mathrm{max}\}, \\
     u(t, x) &= u^0(x) &&\text{on } \{0\} \times [x_\mathrm{min}, x_\mathrm{max}], \\
     \partial_t u(t, x) &= v^0(x) &&\text{on } \{0\} \times [x_\mathrm{min}, x_\mathrm{max}].
   \end{aligned}
@@ -115,11 +115,11 @@ space
 
 # ╔═╡ de68c071-b710-498b-abb4-2b729250e09a
 function rhs!(ddu, du, u, parameters, t)
-	D2, = parameters
-	mul!(ddu, D2, u)
-	ddu[begin] += derivative_left(D2, u, Val{1}()) / left_boundary_weight(D2)
-	ddu[end] -= derivative_right(D2, u, Val{1}()) / right_boundary_weight(D2)
-	return nothing
+    D2, = parameters
+    mul!(ddu, D2, u)
+    ddu[begin] += derivative_left(D2, u, Val{1}()) / left_boundary_weight(D2)
+    ddu[end] -= derivative_right(D2, u, Val{1}()) / right_boundary_weight(D2)
+    return nothing
 end
 
 # ╔═╡ 982e9af9-ba93-4855-bb0a-a3bd4249ab2c
@@ -128,14 +128,14 @@ end
 # We use that the initial condition is essentially zero at the boundaries
 # (in 64 bit floating point arithmetic).
 function usol(t, x)
-	u = zero(t + x)
-	# This is only accurate up to time 10
-	for i in 0:5
-		left  = 0.5 * exp(-20 * (x - t + 2 * i)^2)
-		right = 0.5 * exp(-20 * (x + t - 2 * i)^2)
-		u = u + left + right
-	end
-	return u
+    u = zero(t + x)
+    # This is only accurate up to time 10
+    for i in 0:5
+        left  = 0.5 * exp(-20 * (x - t + 2 * i)^2)
+        right = 0.5 * exp(-20 * (x + t - 2 * i)^2)
+        u = u + left + right
+    end
+    return u
 end
 
 # ╔═╡ dd98c2bd-b0b9-4c73-8ff7-e66d31c05204
@@ -154,45 +154,45 @@ md"""
 
 # ╔═╡ 80620afb-7a5f-4511-9afd-d80c9d045885
 begin
-	D2 = derivative_operator(MattssonNordström2004(),
-						     derivative_order = 2, accuracy_order = 2,
-						     xmin = -1.0, xmax = 1.0, N = N)
-	x = grid(D2)
-	u0 = @. exp(-20 * x^2)
-	v0 = zero(u0)
-	nothing
+    D2 = derivative_operator(MattssonNordström2004(),
+                             derivative_order = 2, accuracy_order = 2,
+                             xmin = -1.0, xmax = 1.0, N = N)
+    x = grid(D2)
+    u0 = @. exp(-20 * x^2)
+    v0 = zero(u0)
+    nothing
 end
 
 # ╔═╡ 13e33aa8-f7b4-4a28-b6ff-9c4351af361c
 begin
-	ode = SecondOrderODEProblem(rhs!, v0, u0, (0.0, Tmax), (D2,))
-	sol = solve(ode, SSPRK33(); adaptive = false, dt = Δt)
-	nothing
+    ode = SecondOrderODEProblem(rhs!, v0, u0, (0.0, Tmax), (D2,))
+    sol = solve(ode, SSPRK33(); adaptive = false, dt = Δt)
+    nothing
 end
 
 # ╔═╡ 46f8b441-af8f-40e3-9856-acfd69d70c20
 let
-	x = grid(D2)
-	err = integrate(abs2, usol.(T, x) - sol(T).x[2], D2) |> sqrt
-	md"""
-	Error at the time ``T``: $(@sprintf("%.2e", err))
-	"""
+    x = grid(D2)
+    err = integrate(abs2, usol.(T, x) - sol(T).x[2], D2) |> sqrt
+    md"""
+    Error at the time ``T``: $(@sprintf("%.2e", err))
+    """
 end
 
 # ╔═╡ 0a071947-9e23-4218-9436-915f08e1a83c
 begin
-	fig = Figure()
-	ax = Axis(fig[1, 1]; xlabel = L"x", ylabel = L"u")
-	x_plot = range(-1.0, 1.0, length = 200)
-	lines!(ax, x_plot, usol.(first(ode.tspan), x_plot), label = L"u^0")
-	scatter!(ax, x, sol(T).x[2], label = L"u^\mathrm{num}")
-	lines!(ax, x_plot, usol.(T, x_plot), label = L"u^\mathrm{ana}")
-	min, max = extrema(sol.u[end].x[2])
-	if min > -0.1 && max < 1.1
-		ylims!(ax, -0.1, 1.1)
-	end
-	axislegend(ax; position = :rt)
-	fig
+    fig = Figure()
+    ax = Axis(fig[1, 1]; xlabel = L"x", ylabel = L"u")
+    x_plot = range(-1.0, 1.0, length = 200)
+    lines!(ax, x_plot, usol.(first(ode.tspan), x_plot), label = L"u^0")
+    scatter!(ax, x, sol(T).x[2], label = L"u^\mathrm{num}")
+    lines!(ax, x_plot, usol.(T, x_plot), label = L"u^\mathrm{ana}")
+    min, max = extrema(sol.u[end].x[2])
+    if min > -0.1 && max < 1.1
+        ylims!(ax, -0.1, 1.1)
+    end
+    axislegend(ax; position = :rt)
+    fig
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001

@@ -63,34 +63,34 @@ nodepy = pyimport("nodepy");
 
 # ╔═╡ 0a071947-9e23-4218-9436-915f08e1a83c
 let
-	erk = nodepy.rk.loadRKM("SSP33")
-	println(erk)
+    erk = nodepy.rk.loadRKM("SSP33")
+    println(erk)
 end
 
 # ╔═╡ efc888eb-6166-4de9-b17a-5309654ccd2c
 let
-	erk = nodepy.rk.loadRKM("RK44")
-	println(erk)
+    erk = nodepy.rk.loadRKM("RK44")
+    println(erk)
 end
 
 # ╔═╡ d2894802-c0c5-4e99-b61b-e2448ca4eec4
 let
-	erk = nodepy.rk.loadRKM("RK44")
-	fig = erk.plot_stability_region()
-	fig
+    erk = nodepy.rk.loadRKM("RK44")
+    fig = erk.plot_stability_region()
+    fig
 end
 
 # ╔═╡ 9d8d986a-c0e1-41d3-a3c5-95e9b25612c1
 let
-	erk = nodepy.rk.loadRKM("SSP22")
-	println(erk)
+    erk = nodepy.rk.loadRKM("SSP22")
+    println(erk)
 end
 
 # ╔═╡ b9cc8758-2490-44a9-95dd-d0f22411744d
 let
-	erk = nodepy.rk.loadRKM("SSP22")
-	fig = erk.plot_stability_region()
-	fig
+    erk = nodepy.rk.loadRKM("SSP22")
+    fig = erk.plot_stability_region()
+    fig
 end
 
 # ╔═╡ 2963c617-25db-4d8c-9f26-fcad4f0df349
@@ -101,13 +101,13 @@ const plt = matplotlib.pyplot;
 
 # ╔═╡ 6dbdf195-932a-44dc-8c47-58b2ae78562f
 let
-	erk = nodepy.rk.loadRKM("SSP33")
-	fig = erk.plot_stability_region()
-	ymax = erk.imaginary_stability_interval()
-	println("imaginary stability interval: ", ymax)
-	println("                     sqrt(3): ", sqrt(3))
-	plt.scatter([0.0], [ymax], marker = "o", color = "black")
-	fig
+    erk = nodepy.rk.loadRKM("SSP33")
+    fig = erk.plot_stability_region()
+    ymax = erk.imaginary_stability_interval()
+    println("imaginary stability interval: ", ymax)
+    println("                     sqrt(3): ", sqrt(3))
+    plt.scatter([0.0], [ymax], marker = "o", color = "black")
+    fig
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001

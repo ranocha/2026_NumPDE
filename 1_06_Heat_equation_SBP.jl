@@ -21,8 +21,8 @@ using Printf
 
 # ╔═╡ de2b4bee-ca03-47e6-9b5c-be3bf7f87bb4
 begin
-	using PlutoUI
-	using PlutoUI: Slider
+    using PlutoUI
+    using PlutoUI: Slider
 end
 
 # ╔═╡ bcec0bba-2f5d-49d7-a0d3-e4ba50afabc0
@@ -37,13 +37,13 @@ using LaTeXStrings
 
 # ╔═╡ eaf36e67-40a4-40a3-8f7c-1c51ba7a9a43
 begin
-	using CairoMakie
-	set_theme!(theme_latexfonts();
-			   fontsize = 16,
-			   linewidth = 3,
-			   markersize = 16,
-			   Lines = (cycle = Cycle([:color, :linestyle], covary = true),),
-			   Scatter = (cycle = Cycle([:color, :marker], covary = true),))
+    using CairoMakie
+    set_theme!(theme_latexfonts();
+               fontsize = 16,
+               linewidth = 3,
+               markersize = 16,
+               Lines = (cycle = Cycle([:color, :linestyle], covary = true),),
+               Scatter = (cycle = Cycle([:color, :marker], covary = true),))
 end
 
 # ╔═╡ 49013e3e-4a23-11ed-3281-85e869263467
@@ -55,7 +55,7 @@ Consider the heat equation
 $$\begin{equation*}
   \begin{aligned}
     \partial_t u(t, x) &= \partial_x^2 u(t, x) && \text{in } (0,T) \times (x_\mathrm{min}, x_\mathrm{max}), \\
-		\partial_x u(t, x) &= 0 && \text{on } (0, T) \times \{x_\mathrm{min}, x_\mathrm{max}\}, \\
+    \partial_x u(t, x) &= 0 && \text{on } (0, T) \times \{x_\mathrm{min}, x_\mathrm{max}\}, \\
     u(0, x) &= u^0(x) &&\text{for } x \in [x_\mathrm{min}, x_\mathrm{max}].
   \end{aligned}
 \end{equation*}$$
@@ -100,41 +100,41 @@ md"""
 
 # ╔═╡ 0a071947-9e23-4218-9436-915f08e1a83c
 begin
-	D2 = derivative_operator(MattssonNordström2004(),
-							 derivative_order = 2, accuracy_order = 2,
-							 xmin = -1.0, xmax = 1.0, N = N)
-	x = grid(D2)
-	u0 = @. cos(π * x)
-	usol(t, x) = exp(-π^2 * t) * cos(π * x)
+    D2 = derivative_operator(MattssonNordström2004(),
+                             derivative_order = 2, accuracy_order = 2,
+                             xmin = -1.0, xmax = 1.0, N = N)
+    x = grid(D2)
+    u0 = @. cos(π * x)
+    usol(t, x) = exp(-π^2 * t) * cos(π * x)
 
-	function rhs!(du, u, parameters, t)
-		D2, = parameters
-		mul!(du, D2, u) # du = D2 * u
-		du[begin] += derivative_left(D2, u, Val{1}()) / left_boundary_weight(D2)
-		du[end] -= derivative_right(D2, u, Val{1}()) / right_boundary_weight(D2)
-		return nothing
-	end
-	ode = ODEProblem(rhs!, u0, (0.0, T), (D2,))
-	sol = solve(ode, SSPRK33(); adaptive = false, dt = Δt, save_everystep = false)
+    function rhs!(du, u, parameters, t)
+        D2, = parameters
+        mul!(du, D2, u) # du = D2 * u
+        du[begin] += derivative_left(D2, u, Val{1}()) / left_boundary_weight(D2)
+        du[end] -= derivative_right(D2, u, Val{1}()) / right_boundary_weight(D2)
+        return nothing
+    end
+    ode = ODEProblem(rhs!, u0, (0.0, T), (D2,))
+    sol = solve(ode, SSPRK33(); adaptive = false, dt = Δt, save_everystep = false)
 
-	fig = Figure()
-	ax = Axis(fig[1, 1]; xlabel = L"x", ylabel = L"u")
-	x_plot = range(SummationByPartsOperators.xmin(D2),
-         		   SummationByPartsOperators.xmax(D2), length = 200)
-	lines!(ax, x_plot, usol.(first(ode.tspan), x_plot), label = L"u^0")
-	scatter!(ax, x, sol.u[end], label = L"u^\mathrm{num}")
-	lines!(ax, x_plot, usol.(T, x_plot), label = L"u^\mathrm{ana}")
-	axislegend(ax; position = :rt)
-	fig
+    fig = Figure()
+    ax = Axis(fig[1, 1]; xlabel = L"x", ylabel = L"u")
+    x_plot = range(SummationByPartsOperators.xmin(D2),
+                   SummationByPartsOperators.xmax(D2), length = 200)
+    lines!(ax, x_plot, usol.(first(ode.tspan), x_plot), label = L"u^0")
+    scatter!(ax, x, sol.u[end], label = L"u^\mathrm{num}")
+    lines!(ax, x_plot, usol.(T, x_plot), label = L"u^\mathrm{ana}")
+    axislegend(ax; position = :rt)
+    fig
 end
 
 # ╔═╡ 46f8b441-af8f-40e3-9856-acfd69d70c20
 let
-	x = grid(D2)
-	err = integrate(abs2, usol.(T, x) - sol.u[end], D2) |> sqrt
-	md"""
-	Error at the final time: $(@sprintf("%.2e", err))
-	"""
+    x = grid(D2)
+    err = integrate(abs2, usol.(T, x) - sol.u[end], D2) |> sqrt
+    md"""
+    Error at the final time: $(@sprintf("%.2e", err))
+    """
 end
 
 # ╔═╡ 27b7b87b-5d76-4893-9d32-9b1fd7d200b1

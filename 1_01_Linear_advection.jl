@@ -18,8 +18,8 @@ end
 
 # ╔═╡ de2b4bee-ca03-47e6-9b5c-be3bf7f87bb4
 begin
-	using PlutoUI
-	using PlutoUI: Slider
+    using PlutoUI
+    using PlutoUI: Slider
 end
 
 # ╔═╡ bcec0bba-2f5d-49d7-a0d3-e4ba50afabc0
@@ -34,13 +34,13 @@ using LaTeXStrings
 
 # ╔═╡ 9aeb4d30-2fda-42dd-b9c0-cba7c1dad70b
 begin
-	using CairoMakie
-	set_theme!(theme_latexfonts();
-			   fontsize = 16,
-			   linewidth = 3,
-			   markersize = 16,
-			   Lines = (cycle = Cycle([:color, :linestyle], covary = true),),
-			   Scatter = (cycle = Cycle([:color, :marker], covary = true),))
+    using CairoMakie
+    set_theme!(theme_latexfonts();
+               fontsize = 16,
+               linewidth = 3,
+               markersize = 16,
+               Lines = (cycle = Cycle([:color, :linestyle], covary = true),),
+               Scatter = (cycle = Cycle([:color, :marker], covary = true),))
 end
 
 # ╔═╡ 49013e3e-4a23-11ed-3281-85e869263467
@@ -87,22 +87,22 @@ md"""
 
 # ╔═╡ 0a071947-9e23-4218-9436-915f08e1a83c
 begin
-	D = periodic_derivative_operator(derivative_order = 1, accuracy_order = 2,
-													 xmin = -1.0, xmax = 1.0, N = N)
-	x = grid(D)
-	u0 = @. sin(π * x)
-	ode = ODEProblem((du, u, D, t) -> mul!(du, D, u, -1), u0, (0.0, T), D)
-	sol = solve(ode, SSPRK33(); adaptive = false, dt = Δt, save_everystep = false)
+    D = periodic_derivative_operator(derivative_order = 1, accuracy_order = 2,
+                                     xmin = -1.0, xmax = 1.0, N = N)
+    x = grid(D)
+    u0 = @. sin(π * x)
+    ode = ODEProblem((du, u, D, t) -> mul!(du, D, u, -1), u0, (0.0, T), D)
+    sol = solve(ode, SSPRK33(); adaptive = false, dt = Δt, save_everystep = false)
 
-	fig = Figure()
-	ax = Axis(fig[1, 1]; xlabel = L"x", ylabel = L"u")
-	x_plot = range(SummationByPartsOperators.xmin(D),
-         		   SummationByPartsOperators.xmax(D), length = 200)
-	lines!(ax, x_plot, sinpi.(x_plot), label = L"u^0")
-	scatter!(ax, x, sol.u[end], label = L"u^\mathrm{num}")
-	lines!(ax, x_plot, @.(sinpi(x_plot - T)), label = L"u^\mathrm{ana}")
-	axislegend(ax; position = :rt)
-	fig
+    fig = Figure()
+    ax = Axis(fig[1, 1]; xlabel = L"x", ylabel = L"u")
+    x_plot = range(SummationByPartsOperators.xmin(D),
+                   SummationByPartsOperators.xmax(D), length = 200)
+    lines!(ax, x_plot, sinpi.(x_plot), label = L"u^0")
+    scatter!(ax, x, sol.u[end], label = L"u^\mathrm{num}")
+    lines!(ax, x_plot, @.(sinpi(x_plot - T)), label = L"u^\mathrm{ana}")
+    axislegend(ax; position = :rt)
+    fig
 end
 
 # ╔═╡ 823036b2-f41d-4642-995f-4e96cc6f9f15

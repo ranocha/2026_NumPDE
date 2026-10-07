@@ -15,39 +15,39 @@ md"""
 
 # ╔═╡ 3bf1c95f-4a14-4a23-ba93-cf9bb26cb41e
 let
-	repo = "2026_NumPDE"
-	url = "https://ranocha.de/" * repo * "/"
+    repo = "2026_NumPDE"
+    url = "https://ranocha.de/" * repo * "/"
 
-	notebooks = String[]
-	for name in readdir(@__DIR__)
-		full_name = joinpath(@__DIR__, name)
-		if isfile(full_name) && endswith(name, ".jl") &&
-								startswith(name, r"\d")
-			push!(notebooks, name)
-		end
-	end
+    notebooks = String[]
+    for name in readdir(@__DIR__)
+        full_name = joinpath(@__DIR__, name)
+        if isfile(full_name) && endswith(name, ".jl") &&
+                                startswith(name, r"\d")
+            push!(notebooks, name)
+        end
+    end
 
-	# text = """Hier finden Sie eine Liste der statischen Notebooks zur Vorlesung.
-	# 		  Um die Notebooks dynamisch verwenden zu können müssen Sie Julia
-	# 		  lokal installieren wie in der README.md des
-	# 		  [Repositories](https://github.com/ranocha/$(repo)) beschrieben."""
-	text = """Here you will find a list of the static notebooks for the lecture.
-		      To use the notebooks interactively, you need to install Julia locally
-		      as described in the [repository’s](https://github.com/ranocha/$(repo))
-		      README.md."""
-	for name in notebooks
-		file = read(name, String)
-		pattern = r"md\"\"\"\n# (\d+\.\d+ [^\n]+)"
-		# pattern = r"md\"\"\"\n# (\d+ [^\n]+)"
-		m = match(pattern, file)
-		m === nothing && continue
-		title = m.captures[1]
+    # text = """Hier finden Sie eine Liste der statischen Notebooks zur Vorlesung.
+    #         Um die Notebooks dynamisch verwenden zu können müssen Sie Julia
+    #         lokal installieren wie in der README.md des
+    #         [Repositories](https://github.com/ranocha/$(repo)) beschrieben."""
+    text = """Here you will find a list of the static notebooks for the lecture.
+              To use the notebooks interactively, you need to install Julia locally
+              as described in the [repository’s](https://github.com/ranocha/$(repo))
+              README.md."""
+    for name in notebooks
+        file = read(name, String)
+        pattern = r"md\"\"\"\n# (\d+\.\d+ [^\n]+)"
+        # pattern = r"md\"\"\"\n# (\d+ [^\n]+)"
+        m = match(pattern, file)
+        m === nothing && continue
+        title = m.captures[1]
 
-		text = text * "\n- [`" * title * "`](" *
-				url * name[begin:end-3] * ".html)"
-	end
+        text = text * "\n- [`" * title * "`](" *
+                url * name[begin:end-3] * ".html)"
+    end
 
-	Markdown.parse(text)
+    Markdown.parse(text)
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001

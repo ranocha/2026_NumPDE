@@ -21,8 +21,8 @@ using Printf
 
 # ╔═╡ de2b4bee-ca03-47e6-9b5c-be3bf7f87bb4
 begin
-	using PlutoUI
-	using PlutoUI: Slider
+    using PlutoUI
+    using PlutoUI: Slider
 end
 
 # ╔═╡ bcec0bba-2f5d-49d7-a0d3-e4ba50afabc0
@@ -37,13 +37,13 @@ using LaTeXStrings
 
 # ╔═╡ d0789b63-76f0-4e1c-bfbd-020bfa1b3df1
 begin
-	using CairoMakie
-	set_theme!(theme_latexfonts();
-			   fontsize = 16,
-			   linewidth = 3,
-			   markersize = 16,
-			   Lines = (cycle = Cycle([:color, :linestyle], covary = true),),
-			   Scatter = (cycle = Cycle([:color, :marker], covary = true),))
+    using CairoMakie
+    set_theme!(theme_latexfonts();
+               fontsize = 16,
+               linewidth = 3,
+               markersize = 16,
+               Lines = (cycle = Cycle([:color, :linestyle], covary = true),),
+               Scatter = (cycle = Cycle([:color, :marker], covary = true),))
 end
 
 # ╔═╡ 49013e3e-4a23-11ed-3281-85e869263467
@@ -98,41 +98,41 @@ md"""
 
 # ╔═╡ 0a071947-9e23-4218-9436-915f08e1a83c
 begin
-	D = derivative_operator(MattssonNordström2004(),
-							derivative_order = 1, accuracy_order = 2,
-							xmin = 0.0, xmax = 2.0, N = N)
-	x = grid(D)
-	u0 = @. sin(π * x)
-	gL(t) = -sin(π * t)
-	usol(t, x) = x - a * t > 0 ? sinpi(x - a * t) : gL(t - x / a)
-	
-	function rhs!(du, u, parameters, t)
-		D, a = parameters
-		mul!(du, D, u, -a) # du = -a * D * u
-		du[begin] += a * (gL(t) - u[begin]) / left_boundary_weight(D)
-		return nothing
-	end
-	ode = ODEProblem(rhs!, u0, (0.0, T), (D, a))
-	sol = solve(ode, SSPRK33(); adaptive = false, dt = Δt, save_everystep = false)
+    D = derivative_operator(MattssonNordström2004(),
+                            derivative_order = 1, accuracy_order = 2,
+                            xmin = 0.0, xmax = 2.0, N = N)
+    x = grid(D)
+    u0 = @. sin(π * x)
+    gL(t) = -sin(π * t)
+    usol(t, x) = x - a * t > 0 ? sinpi(x - a * t) : gL(t - x / a)
+    
+    function rhs!(du, u, parameters, t)
+        D, a = parameters
+        mul!(du, D, u, -a) # du = -a * D * u
+        du[begin] += a * (gL(t) - u[begin]) / left_boundary_weight(D)
+        return nothing
+    end
+    ode = ODEProblem(rhs!, u0, (0.0, T), (D, a))
+    sol = solve(ode, SSPRK33(); adaptive = false, dt = Δt, save_everystep = false)
 
-	fig = Figure()
-	ax = Axis(fig[1, 1]; xlabel = L"x", ylabel = L"u")
-	x_plot = range(SummationByPartsOperators.xmin(D),
-         		   SummationByPartsOperators.xmax(D), length = 200)
-	lines!(ax, x_plot, sinpi.(x_plot), label = L"u^0")
-	scatter!(ax, x, sol.u[end], label = L"u^\mathrm{num}")
-	lines!(ax, x_plot, usol.(T, x_plot), label = L"u^\mathrm{ana}")
-	axislegend(ax; position = :rt)
-	fig
+    fig = Figure()
+    ax = Axis(fig[1, 1]; xlabel = L"x", ylabel = L"u")
+    x_plot = range(SummationByPartsOperators.xmin(D),
+                   SummationByPartsOperators.xmax(D), length = 200)
+    lines!(ax, x_plot, sinpi.(x_plot), label = L"u^0")
+    scatter!(ax, x, sol.u[end], label = L"u^\mathrm{num}")
+    lines!(ax, x_plot, usol.(T, x_plot), label = L"u^\mathrm{ana}")
+    axislegend(ax; position = :rt)
+    fig
 end
 
 # ╔═╡ 46f8b441-af8f-40e3-9856-acfd69d70c20
 let
-	x = grid(D)
-	err = integrate(abs2, usol.(T, x) - sol.u[end], D) |> sqrt
-	md"""
-	Error at the final time: $(@sprintf("%.2e", err))
-	"""
+    x = grid(D)
+    err = integrate(abs2, usol.(T, x) - sol.u[end], D) |> sqrt
+    md"""
+    Error at the final time: $(@sprintf("%.2e", err))
+    """
 end
 
 # ╔═╡ 27b7b87b-5d76-4893-9d32-9b1fd7d200b1
